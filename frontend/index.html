@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor de Búsqueda de Patentes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: #667eea;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .setup-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .setup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .status {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            border: 1px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .result-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .result-abstract {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-meta {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Motor de Búsqueda de Patentes</h1>
+            <p>Búsqueda semántica y clasificación de patentes USPTO con SQLite</p>
+        </div>
+
+        <!-- Estado del Sistema -->
+        <div id="statusContainer" class="setup-container">
+            <h3>Estado del Sistema</h3>
+            <div id="status" class="status info">
+                Verificando estado del sistema...
+            </div>
+            <button id="setupBtn" class="setup-btn" onclick="configurarSistema()">
+                Configurar Sistema
+            </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div id="statsContainer" class="stats-grid" style="display: none;">
+            <div class="stat-card">
+                <div id="totalPatents" class="stat-number">0</div>
+                <div class="stat-label">Total de Patentes</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalCompanies" class="stat-number">0</div>
+                <div class="stat-label">Empresas</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalCategories" class="stat-number">0</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+        </div>
+
+        <!-- Interfaz de Búsqueda -->
+        <div id="searchContainer" class="search-container" style="display: none;">
+            <form id="searchForm" class="search-form" onsubmit="buscarPatentes(event)">
+                <input type="text" id="searchQuery" class="search-input" 
+                       placeholder="Buscar patentes por título, resumen o descripción..." required>
+                <button type="submit" class="search-btn">Buscar</button>
+            </form>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">Categoría</label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Empresa</label>
+                    <select id="assigneeFilter" class="filter-select">
+                        <option value="">Todas las Empresas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Resultados por página</label>
+                    <select id="sizeFilter" class="filter-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div id="resultsContainer" class="results-container" style="display: none;">
+            <div id="resultsHeader">
+                <h3 id="resultsCount">Resultados de Búsqueda</h3>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let consultaActual = '';
+
+        // Verificar estado del sistema al cargar
+        window.onload = function() {
+            verificarEstadoSistema();
+        };
+
+        async function verificarEstadoSistema() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const status = await response.json();
+                
+                const statusDiv = document.getElementById('status');
+                const setupBtn = document.getElementById('setupBtn');
+                
+                if (status.status === 'healthy') {
+                    // Verificar si tenemos datos intentando obtener estadísticas
+                    try {
+                        const statsResponse = await fetch(`${API_BASE}/stats`);
+                        const stats = await statsResponse.json();
+                        
+                        // CORRECCIÓN: Verificar la estructura correcta de stats
+                        console.log('Stats recibidas:', stats); // Para debug
+                        
+                        if (stats.aggregations && stats.aggregations.total_patents > 0) {
+                            statusDiv.innerHTML = `✅ ¡Sistema listo! Usando motor ${status.search_engine}`;
+                            statusDiv.className = 'status success';
+                            setupBtn.style.display = 'none';
+                            
+                            mostrarInterfazBusqueda();
+                            cargarFiltros();
+                            cargarEstadisticas();
+                        } else {
+                            statusDiv.innerHTML = '⚠️ Sistema listo pero no hay patentes cargadas';
+                            statusDiv.className = 'status info';
+                            setupBtn.innerHTML = 'Cargar Patentes';
+                        }
+                    } catch (error) {
+                        console.error('Error al obtener estadísticas:', error);
+                        statusDiv.innerHTML = '⚠️ Sistema listo pero no hay patentes cargadas';
+                        statusDiv.className = 'status info';
+                        setupBtn.innerHTML = 'Cargar Patentes';
+                    }
+                    
+                } else {
+                    statusDiv.innerHTML = `❌ Motor de búsqueda no disponible (${status.search_engine || 'ninguno'})`;
+                    statusDiv.className = 'status error';
+                    setupBtn.innerHTML = 'Inicializar Sistema';
+                }
+                
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                const statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = '❌ No se puede conectar a la API. Por favor inicia la aplicación Flask.';
+                statusDiv.className = 'status error';
+            }
+        }
+
+        async function configurarSistema() {
+            const statusDiv = document.getElementById('status');
+            const setupBtn = document.getElementById('setupBtn');
+            
+            statusDiv.innerHTML = '🔄 Configurando sistema y cargando patentes...';
+            statusDiv.className = 'status info';
+            setupBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/setup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    statusDiv.innerHTML = '✅ ¡Configuración completada! Patentes cargadas exitosamente.';
+                    statusDiv.className = 'status success';
+                    setupBtn.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        mostrarInterfazBusqueda();
+                        cargarFiltros();
+                        cargarEstadisticas();
+                    }, 1000);
+                    
+                } else {
+                    statusDiv.innerHTML = '❌ Configuración falló: ' + (result.error || 'Error desconocido');
+                    statusDiv.className = 'status error';
+                    setupBtn.disabled = false;
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Configuración falló: ' + error.message;
+                statusDiv.className = 'status error';
+                setupBtn.disabled = false;
+            }
+        }
+
+        function mostrarInterfazBusqueda() {
+            document.getElementById('searchContainer').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('statsContainer').style.display = 'grid';
+        }
+
+        async function cargarFiltros() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const stats = await response.json();
+                
+                console.log('Cargando filtros con stats:', stats); // Para debug
+                
+                if (stats.aggregations) {
+                    // Cargar categorías
+                    const categorySelect = document.getElementById('categoryFilter');
+                    const categories = stats.aggregations.categories || {};
+                    
+                    // Traducir nombres de categorías
+                    const categoryTranslations = {
+                        'physics': 'Física',
+                        'artificial_intelligence': 'Inteligencia Artificial',
+                        'biotechnology': 'Biotecnología',
+                        'chemistry': 'Química',
+                        'electronics': 'Electrónica',
+                        'mechanical': 'Mecánica',
+                        'software': 'Software',
+                        'telecommunications': 'Telecomunicaciones'
+                    };
+                    
+                    Object.entries(categories).forEach(([name, count]) => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        const translatedName = categoryTranslations[name] || name;
+                        option.textContent = `${translatedName} (${count})`;
+                        categorySelect.appendChild(option);
+                    });
+                    
+                    // Cargar empresas
+                    const assigneeSelect = document.getElementById('assigneeFilter');
+                    const assignees = stats.aggregations.top_assignees || {};
+                    
+                    Object.entries(assignees).slice(0, 20).forEach(([name, count]) => {
+                        if (name !== 'Unknown Assignee') {
+                            const option = document.createElement('option');
+                            option.value = name;
+                            option.textContent = `${name} (${count})`;
+                            assigneeSelect.appendChild(option);
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar filtros:', error);
+            }
+        }
+
+        async function cargarEstadisticas() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const stats = await response.json();
+                
+                console.log('Cargando estadísticas:', stats); // Para debug
+                
+                if (stats.aggregations) {
+                    // CORRECCIÓN: Usar la estructura correcta
+                    document.getElementById('totalPatents').textContent = stats.aggregations.total_patents || 0;
+                    document.getElementById('totalCompanies').textContent = Object.keys(stats.aggregations.top_assignees || {}).length;
+                    document.getElementById('totalCategories').textContent = Object.keys(stats.aggregations.categories || {}).length;
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
+        }
+
+        async function buscarPatentes(event) {
+            if (event) event.preventDefault();
+            
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) return;
+            
+            const category = document.getElementById('categoryFilter').value;
+            const assignee = document.getElementById('assigneeFilter').value;
+            const limit = document.getElementById('sizeFilter').value;
+            
+            consultaActual = query;
+            
+            // Mostrar carga
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Buscando patentes...</p>
+                </div>
+            `;
+            
+            try {
+                const params = new URLSearchParams({
+                    q: query,
+                    limit: limit
+                });
+                
+                if (category) params.append('category', category);
+                if (assignee) params.append('assignee', assignee);
+                
+                console.log('Realizando búsqueda con parámetros:', params.toString());
+                
+                const response = await fetch(`${API_BASE}/search?${params}`);
+                const results = await response.json();
+                
+                console.log('Resultados de búsqueda:', results);
+                
+                mostrarResultados(results);
+                
+            } catch (error) {
+                console.error('Error en búsqueda:', error);
+                resultsContent.innerHTML = `
+                    <div class="status error">
+                        Error en la búsqueda: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function mostrarResultados(results) {
+            const resultsCount = document.getElementById('resultsCount');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsCount.textContent = `Se encontraron ${results.total || 0} patentes`;
+            
+            if (results.results && results.results.length > 0) {
+                resultsContent.innerHTML = results.results.map(patent => `
+                    <div class="result-item">
+                        <div class="result-title">${resaltarTexto(patent.title || 'Sin título')}</div>
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">🏢</span>
+                                <span><strong>Empresa:</strong> ${patent.assignee || 'Desconocida'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span><strong>Fecha:</strong> ${patent.application_date || 'Desconocida'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">🎯</span>
+                                <span><strong>Puntuación:</strong> ${(patent.score || 0).toFixed(2)}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">🆔</span>
+                                <span><strong>ID:</strong> ${patent.id || 'Desconocido'}</span>
+                            </div>
+                        </div>
+                        <div class="result-abstract">
+                            <strong>Resumen:</strong> ${resaltarTexto(patent.abstract || 'No hay resumen disponible')}
+                        </div>
+                        <div class="result-tags">
+                            <span class="tag">${traducirCategoria(patent.category) || 'Otra'}</span>
+                            <span class="tag">${patent.ipc_class || 'N/A'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                resultsContent.innerHTML = `
+                    <div class="status info">
+                        No se encontraron patentes para "${consultaActual}". Intenta con diferentes palabras clave o filtros.
+                    </div>
+                `;
+            }
+        }
+
+        function traducirCategoria(category) {
+            const translations = {
+                'physics': 'Física',
+                'artificial_intelligence': 'Inteligencia Artificial',
+                'biotechnology': 'Biotecnología',
+                'chemistry': 'Química',
+                'electronics': 'Electrónica',
+                'mechanical': 'Mecánica',
+                'software': 'Software',
+                'telecommunications': 'Telecomunicaciones'
+            };
+            return translations[category] || category;
+        }
+
+        function resaltarTexto(text) {
+            if (!consultaActual || !text) return text;
+            
+            const words = consultaActual.split(' ').filter(word => word.length > 2);
+            let highlightedText = text;
+            
+            words.forEach(word => {
+                const regex = new RegExp(`(${word})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
+            });
+            
+            return highlightedText;
+        }
+    </script>
+</body>
+</html>

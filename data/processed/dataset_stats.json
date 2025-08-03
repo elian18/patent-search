@@ -1,0 +1,31 @@
+{
+  "total_patents": 50,
+  "unique_assignees": 9,
+  "top_assignees": {
+    "Unknown Assignee": 41,
+    "SYNGENTA CROP PROTECTION AG": 2,
+    "Ag Leader Technology, Inc.": 1,
+    "Deere & Company": 1,
+    "BASF Corporation": 1,
+    "SMF-HOLDING GMBH": 1,
+    "Zhuo Xing Cheng Pin (Ningbo) Design Co., Ltd": 1,
+    "CLAAS Selbstfahrende Erntemaschinen GmbH": 1,
+    "Syngenta Crop Protection AG": 1
+  },
+  "categories": {
+    "physics": 46,
+    "artificial_intelligence": 3,
+    "biotechnology": 1
+  },
+  "date_range": {
+    "earliest": "2022-10-19",
+    "latest": "2025-04-03"
+  },
+  "avg_lengths": {
+    "title": 43.3,
+    "abstract": 715.9
+  },
+  "ipc_distribution": {
+    "G06F": 50
+  }
+}
